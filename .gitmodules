@@ -1,0 +1,3 @@
+[submodule "visual-rag"]
+	path = visual-rag
+	url = https://github.com/tran-kim-quang/visual-rag.git
