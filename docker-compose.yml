@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    container_name: nextjs_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_FACE_API_URL=http://face_api:8000
+      - NEXT_PUBLIC_VISUAL_RAG_API_URL=http://visual_rag_api:8000
+    depends_on:
+      visual_rag_api:
+        condition: service_healthy
+      face_api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  face_api:
+    build:
+      context: ./face_api
+    container_name: face_api_service
+    ports:
+      - "8001:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  visual_rag_api:
+    build:
+      context: ./visual-rag
+    container_name: visual_rag_service
+    ports:
+      - "8003:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENROUTER_API_KEY}
+    volumes:
+      - ./visual-rag/data_clean:/app/data_clean
+      - ./visual-rag/data_msd:/app/data_msd
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
