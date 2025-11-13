@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   frontend:
     build:
@@ -38,7 +36,8 @@ services:
     ports:
       - "8003:8000"
     environment:
-      - OPENAI_API_KEY=${OPENROUTER_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - BASE_MODEL_NAME=${BASE_MODEL_NAME}
     volumes:
       - ./visual-rag/data_clean:/app/data_clean
       - ./visual-rag/data_msd:/app/data_msd
